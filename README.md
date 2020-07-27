@@ -1,5 +1,7 @@
 # prime-iter
 <BR>
+<B>Unfinished and un-tested</B>
+<BR>
 <B><I>Attempt at memory intensive prime calulations using Eratosthene's and Atkin's techniques</I></B>
 <P>
 Just started this today (2020.209).
