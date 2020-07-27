@@ -1,3 +1,5 @@
+// https://en.wikipedia.org/wiki/List_of_prime_numbers
+
 //limit ← 1000000000        // arbitrary search limit
 #define BLOCKSIZE 1600000000 // 1600000000 ~1.6GB == The first 12.8 billion numbers
 #define BLOCKROOT 126491 // √1600000000
