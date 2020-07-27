@@ -1,6 +1,6 @@
 # prime-iter
 <BR>
-<B>Unfinished and un-tested</B>
+<H2>Unfinished and un-tested</H2><BR>
 <BR>
 <B><I>Attempt at memory intensive prime calulations using Eratosthene's and Atkin's techniques</I></B>
 <P>
