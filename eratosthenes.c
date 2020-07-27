@@ -1,4 +1,6 @@
-/*algorithm Sieve of Eratosthenes is
+/*https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
+
+algorithm Sieve of Eratosthenes is
     input: an integer n > 1.
     output: all prime numbers from 2 through n.
 */
