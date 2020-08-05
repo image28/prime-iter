@@ -10,6 +10,6 @@ Have an idea about removing the Ram requirements while maintrain the speed, stil
 </P>
 <B>Requirements:</B><BR>
 <UL><LI>gcc</LI>
-<LI>SSD >= 240MB partitioned as swap memory</LI>
+<LI>SSD >= 240GB partitioned as swap memory</LI>
 <LI>or</LI>
 <LI>256GB or RAM</LI></UL>
