@@ -48,9 +48,9 @@ int main(int argc, char *argv[])
 
     for(i=0; i < BLOCKROOT; i++)
     {
-        multipos='\0';
-        fscanf(input,"%llu\n",&multipos);
-        //printf("%llu\n",multipos);
+        multipos=0;
+        fscanf(input,"%llu",&multipos);
+        printf("%llu\n",multipos);
         *(primearray+i)=multipos;
     }
     multipos=1;
@@ -110,12 +110,11 @@ void primeIter(u_int32_t *primearray, u_int32_t *primepos, u_int64_t *array, u_i
                 {
                     // Test this with a mask array first
                     #ifdef SPEED
-                        *(array+*(position))=  ( *(array+*(position)) & ~*(mask+*(bitpos))) | ( -1 & *(mask+*(bitpos)) );
+                        *(array+*(position))=  ( *(array+*(position))+*(mask+*(bitpos)) );
                     // Then without
                     #else
-                        *(mask)=1;
-                        *(mask) >>= *(bitpos); 
-                        *(array+*(position))=*(array+*(position)) & ~*(mask) ) | ( -1 & *(mask));
+                        *(mask)=1; 
+                        *(array+*(position))=*(array+*(position))+(*(mask) << *(bitpos)) ;
                     #endif
 
                     
@@ -126,7 +125,7 @@ void primeIter(u_int32_t *primearray, u_int32_t *primepos, u_int64_t *array, u_i
                         *(multipos)=1;
                         *(bitpos)=*(bitpos)+1;
 
-                        if ( *(bitpos) == 63 )
+                        if ( *(bitpos) > 63 )
                         {
                             *(bitpos)=0;
                             *(position)=*(position)+1;
