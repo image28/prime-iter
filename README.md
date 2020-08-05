@@ -6,6 +6,7 @@
 <P>
 Just started this today (2020.209).
 Based on the idea that computers can work faster in parallel without loops, and a huge stack!
+Have an idea about removing the Ram requirements while maintrain the speed, still just a theory!
 </P>
 <B>Requirements:</B><BR>
 <UL><LI>gcc</LI>
