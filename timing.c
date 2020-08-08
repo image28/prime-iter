@@ -16,6 +16,7 @@ void timestamp(u_int64_t *result)
     *(result)=0;
 
     gettimeofday(&tv,NULL);
+    // https://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
     *(result)=(tv.tv_sec*((tv.tv_usec >= 1000000) ? 6 : (tv.tv_usec >= 100000) ? 5 : (v >= 10000) ? 4 : 
     (tv.tv_usec >= 1000) ? 3 : (tv.tv_usec >= 100) ? 2 : (tv.tv_usec >= 10) ? 1 : 0))+tv.tv_usec;
 }
