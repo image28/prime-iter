@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <immintrin.h>
 #include <inttypes.h>
+#include "gnuplot_pipes.h"
 #endif
 
 #ifdef MATHMACROS
@@ -39,8 +40,22 @@ inline __m256i _mm256_div_epi16 (const __m256i va, const int b)
 }
 #endif
 
+#ifdef COMPILE
+void compile(char *cmd, char *defines)
+{
+    strcpy(compileline, COMPILER);
+    strcat(compileline, cmd);
+    strcat(compileline, ".c ");
+    strcat(compileline, defines);
+    strcat(compileline, " -o ");
+    strcat(compileline, cmd);
+
+    exec(compileline);
+}
+#endif
+
 #ifdef BENCH
-void benchmark(char *cmd, char *runs)
+void benchmark(char *cmd, int runs, char *defines)
 {
     __m256i total=_mm256_set_epi64x(0,0,0,0);
     __m256i average=_mm256_set_epi64x(0,0,0,0);
@@ -51,6 +66,14 @@ void benchmark(char *cmd, char *runs)
     u_int64_t start=0;
     u_int64_t stop=0;
     u_int64_t result=0;
+    char nullpointer='\0';
+
+#ifdef COMPILE
+    if ( *(cmd+(strlen(cmd)-1)) == 'c' )
+    {
+        compile(cmd,nullpointer);
+    }
+#endif 
 
     for(i=0; i < runs; i++)
     {
@@ -87,12 +110,52 @@ void benchmark(char *cmd, char *runs)
         print256_num(_mm256_div_epi16(total,runs));
         printf("\n");
     #endif
+
+#ifdef COMPILE
+    if ( defines != '\0' )
+    {
+        #ifdef INFO
+            printf("Recompiling with different compile defines");
+        #endif
+        compile(cmd,defines);
+        #ifdef INFO
+            printf("Benchmarking with new defines");
+        #endif
+        *(defines)='\0';
+        benchmark(cmd,runs,nullpointer);  
+    }
+#endif
+
 }
+
+#ifdef GRAPH
+void plotpoint()
+{
+    // Plot points
+    gnuplot_setstyle(h1, "points") ;
+    gnuplot_plot1d_var2(h1, dp, 1,"") ;
+}
+
+void plotline()
+{
+    // Line for average
+    gnuplot_setstyle(h1, "lines") ;
+    gnuplot_plot_slope(h1, 2.0, 0.0, "") ;
+}
+#endif
 
 #ifdef MAIN
 int main(int argc, char *argv[])
 {
-    benchmark(argv[1],strtol(argv[2],NULL,10));
+#ifdef GRAPH
+    h1 = gnuplot_init() ;
+#endif
+
+    benchmark(argv[1],strtol(argv[2],NULL,10), argv[3]);
+
+#ifdef GRAPH
+    gnuplot_close(h1) ;
+#endif
 
     return(0);
 }
