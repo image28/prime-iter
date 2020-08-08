@@ -1,4 +1,4 @@
-#ifdef CINC || MAIN 
+#if defined CINC || defined MAIN
     #include <stdio.h>
     #include <stdlib.h>
     #include <sys/types.h>
@@ -14,21 +14,21 @@
     // prime/30 = byte in array
     // prime-(30*bitpos) = bit in array
 
-    int encode(char outfile, u_int64_t *byte, u_int8_t *bitpos, u_int8_t *primearray);
-    int decode(char outfile, u_int64_t *byte, u_int8_t *bitpos, u_int8_t *primearray);
+    int encode(char *outfile, u_int8_t *bitpos, u_int8_t *primearray);
+    int decode(char *outfile, u_int8_t *bitpos, u_int8_t *primearray);
 #endif
 
 #ifdef MAIN
     int main(int argc, char *argv[])
     {
-        u_int64_t byte=1;
+       
         u_int8_t bitpos[8] = {1,7,11,13,17,19,23,29};
         u_int8_t *primearray;
         
         #ifdef ENCODE
-            encode(argv[1],&byte,&bitpos,&primearray);
+            encode(argv[1],&bitpos[0],primearray);
         #elif DECODE
-            decode(argv[1],&byte,&bitpos,&primearray);
+            decode(argv[1],&bitpos[0],primearray);
         #endif
 
         return 0;
@@ -36,27 +36,29 @@
 #endif
 
 #ifdef ENCODE
-    int encode(char outfile, u_int64_t *byte, u_int8_t *bitpos, u_int8_t *primearray)
+    int encode(char *outfile, u_int8_t *bitpos, u_int8_t *primearray)
     {
+        u_int64_t byte=0;
         u_int8_t mask=1;
         u_int8_t prev=0;
         u_int64_t filesize=0;
         primearray=calloc(MAXSIZE,1);
+        int i=0;
 
         do
         {
-        prev=*(byte);
+        prev=byte;
         scanf("%llu\n",byte);
 
         #ifdef INFO
             printf("%llu\n",*(byte));
         #endif
     
-            byte=byte-((byte/30)*30);
+            byte=byte-((byte/(u_int64_t)30)*(u_int64_t)30);
 
             for(i=0; i < 8; i++)
             {   
-                if ( bitpos[i] == byte)
+                if ( *(bitpos+i) == byte)
                 {
                     *(primearray+filesize)=*(primearray+filesize)+(mask<<*(bitpos+i));
                     mask=1;
@@ -78,10 +80,14 @@
 #endif
 
 #ifdef DECODE
-    int decode(char outfile, u_int64_t *byte, u_int8_t *bitpos, u_int8_t *primearray)
+    int decode(char *outfile, u_int8_t *bitpos, u_int8_t *primearray)
     {
+        FILE *input;
+        u_int64_t byte=1;
         u_int64_t filesize=0;
         u_int64_t position=0;
+        char infile[65535];
+        int i=0;
 
         if ( ( input=fopen(infile,"rb+")) == NULL ) exit(-1);
         fseek(input,0L,SEEK_END);
@@ -96,7 +102,7 @@
         if ( filesize < MAXSIZE )
         {
             primearray=calloc(filesize,1);
-            fread(primearry,1,filesize,input);
+            fread(primearray,1,filesize,input);
         }else{
             primearray=calloc(MAXSIZE,1);
         }
@@ -104,7 +110,7 @@
         do{
             for(i=0; i < 8; i++)
             {
-                byte=*(bitpos+i)+position*30);
+                byte=(*(bitpos+i)+position*30);
                 #ifdef DISPLAY
                     printf("%llu\n",byte);
                 #elif WRITE
