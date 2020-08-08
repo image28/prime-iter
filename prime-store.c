@@ -15,7 +15,7 @@
     // prime-(30*bitpos) = bit in array
 
     int encode(char *outfile, u_int8_t *bitpos, u_int8_t *primearray);
-    int decode(char *outfile, u_int8_t *bitpos, u_int8_t *primearray);
+    int decode(char *infile, u_int8_t *bitpos, u_int8_t *primearray);
 #endif
 
 #ifdef MAIN
@@ -45,10 +45,30 @@
         primearray=calloc(MAXSIZE,1);
         int i=0;
 
+    #ifdef INPUTFILE
+        FILE *input;
+        //u_int8_t *data;
+        if (( input=fopen(outfile,"r+"))== NULL) exit(-1);
+        /*fseek(input,0L,SEEK_END);
+        filesize=ftell(input);
+        fseek(input,0L,SEEK_SET);
+        if ( filesize < MAXSIZE )
+        {
+            data=calloc(filesize,1);
+            fread(array,1,filesize,input);
+        }else{
+            data=calloc(MAXSIZE,1);
+        }*/
+    #endif
+
         do
         {
-        prev=byte;
-        scanf("%llu\n",byte);
+            prev=byte;
+        #ifdef INPUTFILE
+            fscanf(input,"%llu",byte);
+        #else
+            scanf("%llu\n",byte);
+        #endif
 
         #ifdef INFO
             printf("%llu\n",*(byte));
@@ -80,13 +100,12 @@
 #endif
 
 #ifdef DECODE
-    int decode(char *outfile, u_int8_t *bitpos, u_int8_t *primearray)
+    int decode(char *infile, u_int8_t *bitpos, u_int8_t *primearray)
     {
         FILE *input;
         u_int64_t byte=1;
         u_int64_t filesize=0;
         u_int64_t position=0;
-        char infile[65535];
         int i=0;
 
         if ( ( input=fopen(infile,"rb+")) == NULL ) exit(-1);
@@ -96,6 +115,9 @@
 
     #ifdef WRITE
         FILE *output;
+        char outfile[65535];
+        strcpy(outfile,infile);
+        strcat(outfile,".decode");
         output=fopen(outfile,"wb+");
     #endif
 
