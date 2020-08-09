@@ -92,6 +92,10 @@ void benchmark(char *cmd, int runs, char *defines, u_int64_t *results, u_int64_t
     u_int64_t stop=0;
     u_int64_t result=0;
     u_int32_t digits;
+    u_int32_t slowestdigits,fastestdigits;
+    char cmdline[32765];
+    strcpy(cmdline,"./");
+    strcat(cmdline,cmd);
     char nullpointer='\0';
     int i=0;
 
@@ -111,7 +115,7 @@ void benchmark(char *cmd, int runs, char *defines, u_int64_t *results, u_int64_t
     {
 
         timestamp(&start, &digits);
-        system(cmd);
+        system(cmdline);
         timestamp(&stop, &digits);
 
         result=stop-start;
@@ -133,17 +137,19 @@ void benchmark(char *cmd, int runs, char *defines, u_int64_t *results, u_int64_t
         if ( result < *(fastest))
         {
             *(fastest)=result;
+            fastestdigits=digits;
         }
 
         if ( result > *(slowest))
         {
             *(slowest)=result;
+            slowestdigits=digits;
         }
 
     }
 
     #ifdef INFO
-    printf("Slowest time: %llu \nFastest Time: %llu\n",*(slowest),*(fastest));
+        printf("Slowest time: %llu %lu\nFastest Time: %llu %lu\n",*(slowest),slowestdigits,*(fastest),fastestdigits);
     #endif
 
     #ifdef AVXPRINT
