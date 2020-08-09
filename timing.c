@@ -2,12 +2,12 @@
     #define COMPILER "gcc "
     #define MAIN    1
     #define TIMESTAMP 1
-    #define GRAPH 1
+    //#define GRAPH 0
     #define AVXPRINT 1
     #define AVXMATH 1
     #define INFO 1
     #define BENCH 1
-    #define COMPILE 1
+    //#define COMPILE
 #endif
 
 #if defined MAIN || defined CINC
@@ -16,6 +16,7 @@
 #include <inttypes.h>
 #include "gnuplot_pipes.h"
 #include <stdlib.h>
+#include <sys/time.h>
 #endif
 
 #ifdef MATHMACROS
@@ -24,15 +25,25 @@
 #endif
 
 #ifdef TIMESTAMP
-void timestamp(u_int64_t *result)
+void timestamp(u_int64_t *result, u_int32_t *digits)
 {
     struct timeval tv;
+    *(digits)=0;
     *(result)=0;
 
     gettimeofday(&tv,NULL);
     // https://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
-    *(result)=(tv.tv_sec*((tv.tv_usec >= 1000000) ? 6 : (tv.tv_usec >= 100000) ? 5 : (tv.tv_usec >= 10000) ? 4 : 
-    (tv.tv_usec >= 1000) ? 3 : (tv.tv_usec >= 100) ? 2 : (tv.tv_usec >= 10) ? 1 : 0))+tv.tv_usec;
+    *(digits)=(((tv.tv_usec >= 1000000000) ? 1000000000 : \
+                (tv.tv_usec >= 100000000)  ? 100000000 : \
+                (tv.tv_usec >= 10000000)   ? 10000000 : \
+                (tv.tv_usec >= 1000000)    ? 1000000 : \
+                (tv.tv_usec >= 100000)     ? 100000 : \
+                (tv.tv_usec >= 10000)      ? 10000 : \
+                (tv.tv_usec >= 1000)       ? 1000 : \
+                (tv.tv_usec >= 100)        ? 100 : \
+                (tv.tv_usec >= 10)         ? 10 : 1));
+
+    *(result)=((tv.tv_sec*(u_int32_t)*(digits))+tv.tv_usec)-(tv.tv_sec*(u_int32_t)*(digits));
 }
 #endif
 
@@ -40,13 +51,14 @@ void timestamp(u_int64_t *result)
 void print256_num(__m256i var) 
 {
     int64_t *v64val = (uint64_t*) &var;
-    printf("%llu %llu %llu %llu\t",v64val[3], v64val[2],v64val[1], v64val[0]);
+    //printf("%llu %llu %llu %llu\t",v64val[3], v64val[2],v64val[1], v64val[0]);
+    printf("%llu *(%llu)",v64val[0], v64val[1]);
 }
 #endif
 
 #ifdef AVXMATH
 // https://stackoverflow.com/questions/42442325/how-to-divide-a-m256i-vector-by-an-integer-variable 
-inline __m256i _mm256_div_epi16 (const __m256i va, const int b)
+__m256i _mm256_div_epi16 (const __m256i va, const u_int64_t b)
 {
     __m256i vb = _mm256_set1_epi16(32768 / b);
     return _mm256_mulhrs_epi16(va, vb);
@@ -79,6 +91,7 @@ void benchmark(char *cmd, int runs, char *defines, u_int64_t *results, u_int64_t
     u_int64_t start=0;
     u_int64_t stop=0;
     u_int64_t result=0;
+    u_int32_t digits;
     char nullpointer='\0';
     int i=0;
 
@@ -89,14 +102,24 @@ void benchmark(char *cmd, int runs, char *defines, u_int64_t *results, u_int64_t
     }
 #endif 
 
+#ifdef INFO
+    timestamp(&start,&digits);
+    printf("Starting at : %llu with %llu digits in the nanoseconds\n",start, digits);
+#endif
+
     for(i=0; i < runs; i=i+2)
     {
 
-        timestamp(&start);
+        timestamp(&start, &digits);
         system(cmd);
-        timestamp(&stop);
+        timestamp(&stop, &digits);
 
         result=stop-start;
+
+        #ifdef DEBUG
+            printf("%llu %llu\n", result, digits);
+        #endif
+
         if ( *(results+runs-1) == 0 )
         {
             *(results+i*2+1)=result;
@@ -119,16 +142,18 @@ void benchmark(char *cmd, int runs, char *defines, u_int64_t *results, u_int64_t
 
     }
 
-    printf("Slowest time: %llu \n Fastest Time %llu\n",slowest,fastest);
+    #ifdef INFO
+    printf("Slowest time: %llu \nFastest Time: %llu\n",*(slowest),*(fastest));
+    #endif
 
     #ifdef AVXPRINT
-        printf("Total time is: \n");
+        printf("Total time difference is:   ");
         print256_num(total);
-        printf("\n");
+        printf("%lu\n",digits);
 
-        printf("Average time is: \n");
+        printf("Average time difference is: ");
         print256_num(_mm256_div_epi16(total,runs));
-        printf("\n");
+        printf("%lu\n",digits);
     #endif
 
 #ifdef COMPILE
@@ -191,9 +216,9 @@ int main(int argc, char *argv[])
 #endif
 
     benchmark(argv[1],runs,argv[3], results, &fastest, &slowest);
-    plotpoints(h1, (struct _DPOINT_ *)results,runs);
 
 #ifdef GRAPH
+    plotpoints(h1, (struct _DPOINT_ *)results,runs);
     gnuplot_close(h1) ;
 #endif
 
